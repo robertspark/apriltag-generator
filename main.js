@@ -1,49 +1,55 @@
 import init, { TagFamily } from "https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js";
+import jsPDF from "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm";
 
-window.generate = async function () {
+window.generatePDF = async function () {
+  const startId = parseInt(document.getElementById("startId").value);
+  const endId = parseInt(document.getElementById("endId").value);
   const familyName = document.getElementById("family").value;
-  const tagId = parseInt(document.getElementById("tagId").value);
-  const tagSize = parseInt(document.getElementById("tagSize").value);
-  const borderSize = parseInt(document.getElementById("borderSize").value);
+  const paperSize = document.getElementById("paperSize").value;
 
-  await init(); // Initialize WASM
-
+  await init();
   const tagFamily = new TagFamily(familyName);
-  const tagBits = tagFamily.getTagBits(tagId); // 2D array
 
-  const totalCells = tagBits.length + 2 * borderSize;
-  const cellSize = Math.floor(tagSize / totalCells);
-  const canvasSize = totalCells * cellSize;
+  const pdf = new jsPDF({ format: paperSize });
 
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = canvasSize;
-  const ctx = canvas.getContext("2d");
+  for (let tagId = startId; tagId <= endId; tagId++) {
+    const tagBits = tagFamily.getTagBits(tagId);
+    const cellCount = tagBits.length;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 5; // mm
+    const gridSize = Math.min(pageWidth, pageHeight) - 2 * margin;
+    const cellSize = gridSize / cellCount;
+    const offsetX = (pageWidth - cellCount * cellSize) / 2;
+    const offsetY = (pageHeight - cellCount * cellSize) / 2;
 
-  // Draw white background
-  ctx.fillStyle = "#FFF";
-  ctx.fillRect(0, 0, canvasSize, canvasSize);
-
-  // Draw tag cells
-  for (let y = 0; y < tagBits.length; y++) {
-    for (let x = 0; x < tagBits.length; x++) {
-      const value = tagBits[y][x];
-      ctx.fillStyle = value ? "#000" : "#FFF";
-      const px = (x + borderSize) * cellSize;
-      const py = (y + borderSize) * cellSize;
-      ctx.fillRect(px, py, cellSize, cellSize);
+    for (let row = 0; row < cellCount; row++) {
+      for (let col = 0; col < cellCount; col++) {
+        const x = offsetX + col * cellSize;
+        const y = offsetY + row * cellSize;
+        if (tagBits[row][col]) {
+          pdf.setFillColor(0, 0, 0);
+          pdf.rect(x, y, cellSize, cellSize, "F");
+        } else {
+          pdf.setFillColor(255, 255, 255);
+          pdf.rect(x, y, cellSize, cellSize, "F");
+        }
+      }
     }
+
+    pdf.setFontSize(18);
+    pdf.text(`AprilTag Family: ${familyName}`, pageWidth / 2, margin, { align: "center" });
+
+    pdf.setFontSize(12);
+    pdf.text(`Tag ID: ${tagId}`, margin, pageHeight - margin);
+    pdf.text(`Paper Size: ${paperSize.toUpperCase()}`, pageWidth - margin, pageHeight - margin, { align: "right" });
+
+    if (tagId < endId) pdf.addPage();
   }
 
-  // Show canvas and download link
-  const output = document.getElementById("output");
-  output.innerHTML = "";
-  output.appendChild(canvas);
-
-  const a = document.createElement("a");
-  a.href = canvas.toDataURL("image/png");
-  a.download = `apriltag-${familyName}-${tagId}.png`;
-  a.innerText = "Download PNG";
-  a.style.display = "block";
-  a.style.marginTop = "10px";
-  output.appendChild(a);
+  const blob = pdf.output("blob");
+  const url = URL.createObjectURL(blob);
+  const link = document.getElementById("downloadLink");
+  link.href = url;
+  link.style.display = "inline";
 };
