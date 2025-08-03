@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>AprilTag Generator (PDF + SVG)</title>
   <style>
     body {
@@ -33,9 +33,10 @@
 <body>
   <h1>AprilTag Generator</h1>
 
-  <label><input type="checkbox" id="darkModeToggle" /> Enable Dark Mode</label>
+  <label><input type="checkbox" id="darkModeToggle"> Enable Dark Mode</label>
 
-  <label>Tag Family:
+  <label>
+    Tag Family:
     <select id="family">
       <option value="tag16h5">tag16h5</option>
       <option value="tag25h7">tag25h7</option>
@@ -47,22 +48,30 @@
       <option value="custom48h12">custom48h12</option>
     </select>
   </label>
-  <label>Start ID: <input type="number" id="startId" value="0" /></label>
-  <label>End ID: <input type="number" id="endId" value="2" /></label>
-  <label>Paper Size:
+
+  <label>Start ID: <input type="number" id="startId" value="0"></label>
+  <label>End ID: <input type="number" id="endId" value="2"></label>
+
+  <label>
+    Paper Size:
     <select id="paperSize">
       <option value="a4">A4</option>
       <option value="a3">A3</option>
       <option value="letter">Letter</option>
     </select>
   </label>
+
   <button id="pdfBtn">Generate PDF</button>
   <button id="svgBtn">Download SVGs (ZIP)</button>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- UMD builds of jsPDF & JSZip -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Your module script -->
+  <script type="module" src="main.js"></script>
+
   <script>
-    document.getElementById("darkModeToggle").addEventListener("change", function () {
+    document.getElementById("darkModeToggle").addEventListener("change", function() {
       document.body.classList.toggle("dark-mode", this.checked);
     });
   </script>
