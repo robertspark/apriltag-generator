@@ -1,51 +1,55 @@
-import init, { TagFamily } from "https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js";
+// Load AprilTag WASM and API
+import init, { TagFamily } from "https://cdn.jsdelivr.net/npm/apriltag@2.0.3/dist/index.js";
+await init();
+
+// Grab UMD globals
 const { jsPDF } = window.jspdf;
 const JSZip = window.JSZip;
 
-await init();
-
+// PDF generation
 document.getElementById("pdfBtn").addEventListener("click", () => {
-  const startId = parseInt(document.getElementById("startId").value);
-  const endId = parseInt(document.getElementById("endId").value);
+  const startId    = parseInt(document.getElementById("startId").value, 10);
+  const endId      = parseInt(document.getElementById("endId").value, 10);
   const familyName = document.getElementById("family").value;
-  const paperSize = document.getElementById("paperSize").value;
+  const paperSize  = document.getElementById("paperSize").value;
+
   const tagFamily = new TagFamily(familyName);
   const pdf = new jsPDF({ format: paperSize });
 
   for (let tagId = startId; tagId <= endId; tagId++) {
     const tagBits = tagFamily.getTagBits(tagId);
-    const cellCount = tagBits.length;
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 5;
-    const gridSize = Math.min(pageWidth, pageHeight) - 2 * margin;
-    const cellSize = gridSize / cellCount;
-    const offsetX = (pageWidth - cellCount * cellSize) / 2;
-    const offsetY = (pageHeight - cellCount * cellSize) / 2;
+    const N = tagBits.length;
+    const w = pdf.internal.pageSize.getWidth();
+    const h = pdf.internal.pageSize.getHeight();
+    const margin = 5;              // mm
+    const grid = Math.min(w, h) - 2 * margin;
+    const cell = grid / N;
+    const ox = (w - N * cell) / 2;
+    const oy = (h - N * cell) / 2;
 
-    for (let row = 0; row < cellCount; row++) {
-      for (let col = 0; col < cellCount; col++) {
-        const x = offsetX + col * cellSize;
-        const y = offsetY + row * cellSize;
-        pdf.setFillColor(tagBits[row][col] ? 0 : 255);
-        pdf.rect(x, y, cellSize, cellSize, "F");
+    // draw grid
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        pdf.setFillColor(tagBits[r][c] ? 0 : 255);
+        pdf.rect(ox + c*cell, oy + r*cell, cell, cell, "F");
       }
     }
 
+    // labels
     pdf.setFontSize(18);
-    pdf.text(`AprilTag Family: ${familyName}`, pageWidth / 2, margin, { align: "center" });
-
+    pdf.text(`AprilTag Family: ${familyName}`, w/2, margin, { align: "center" });
     pdf.setFontSize(12);
-    pdf.text(`Tag ID: ${tagId}`, margin, pageHeight - margin);
-    pdf.text(`Paper Size: ${paperSize.toUpperCase()}`, pageWidth - margin, pageHeight - margin, { align: "right" });
+    pdf.text(`Tag ID: ${tagId}`, margin, h - margin);
+    pdf.text(`Paper Size: ${paperSize.toUpperCase()}`, w - margin, h - margin, { align: "right" });
 
     if (tagId < endId) pdf.addPage();
   }
 
+  // trigger download
   const blob = pdf.output("blob");
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
   a.download = `apriltags_${familyName}_${startId}-${endId}.pdf`;
   document.body.appendChild(a);
   a.click();
@@ -53,33 +57,33 @@ document.getElementById("pdfBtn").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
+// SVG + ZIP generation
 document.getElementById("svgBtn").addEventListener("click", () => {
-  const startId = parseInt(document.getElementById("startId").value);
-  const endId = parseInt(document.getElementById("endId").value);
+  const startId    = parseInt(document.getElementById("startId").value, 10);
+  const endId      = parseInt(document.getElementById("endId").value, 10);
   const familyName = document.getElementById("family").value;
-  const tagFamily = new TagFamily(familyName);
-  const zip = new JSZip();
+  const tagFamily  = new TagFamily(familyName);
+  const zip        = new JSZip();
 
   for (let tagId = startId; tagId <= endId; tagId++) {
-    const tagBits = tagFamily.getTagBits(tagId);
-    const cellCount = tagBits.length;
-    const cellSize = 20;
-    const size = cellCount * cellSize;
+    const bits = tagFamily.getTagBits(tagId);
+    const N    = bits.length;
+    const cell = 20;           // px
+    const size = N * cell;
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
-    for (let y = 0; y < cellCount; y++) {
-      for (let x = 0; x < cellCount; x++) {
-        const color = tagBits[y][x] ? "#000" : "#fff";
-        svg += `<rect x="${x * cellSize}" y="${y * cellSize}" width="${cellSize}" height="${cellSize}" fill="${color}" />`;
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        svg += `<rect x="${c*cell}" y="${r*cell}" width="${cell}" height="${cell}" fill="${bits[r][c] ? "#000" : "#fff"}"/>`;
       }
     }
     svg += `</svg>`;
     zip.file(`apriltag_${familyName}_${tagId}.svg`, svg);
   }
 
-  zip.generateAsync({ type: "blob" }).then(function (blob) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
+  zip.generateAsync({ type: "blob" }).then(blob => {
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
     a.download = `apriltags_${familyName}_${startId}-${endId}.zip`;
     document.body.appendChild(a);
     a.click();
@@ -87,4 +91,3 @@ document.getElementById("svgBtn").addEventListener("click", () => {
     URL.revokeObjectURL(url);
   });
 });
-
