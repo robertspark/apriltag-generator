@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AprilTag Generator with PDF & SVG Export</title>
+  <title>AprilTag Generator (PDF + SVG)</title>
   <style>
     body {
       font-family: sans-serif;
@@ -56,13 +56,10 @@
       <option value="letter">Letter</option>
     </select>
   </label>
-  <button onclick="generatePDF()">Generate PDF</button>
-  <button onclick="generateSVGs()">Download SVGs (ZIP)</button>
+  <button id="pdfBtn">Generate PDF</button>
+  <button id="svgBtn">Download SVGs (ZIP)</button>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="main.js"></script>
-
+  <script type="module" src="main.js"></script>
   <script>
     document.getElementById("darkModeToggle").addEventListener("change", function () {
       document.body.classList.toggle("dark-mode", this.checked);
