@@ -1,13 +1,17 @@
-window.generatePDF = async function () {
+(async () => {
+  const tagModule = await import("https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js");
+  await tagModule.default();
+  window._tagModule = tagModule;
+})();
+
+window.generatePDF = function () {
   const { jsPDF } = window.jspdf;
   const startId = parseInt(document.getElementById("startId").value);
   const endId = parseInt(document.getElementById("endId").value);
   const familyName = document.getElementById("family").value;
   const paperSize = document.getElementById("paperSize").value;
 
-  const tagModule = await import("https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js");
-  await tagModule.default();
-  const tagFamily = new tagModule.TagFamily(familyName);
+  const tagFamily = new window._tagModule.TagFamily(familyName);
   const pdf = new jsPDF({ format: paperSize });
 
   for (let tagId = startId; tagId <= endId; tagId++) {
@@ -51,15 +55,12 @@ window.generatePDF = async function () {
   URL.revokeObjectURL(url);
 };
 
-window.generateSVGs = async function () {
+window.generateSVGs = function () {
   const startId = parseInt(document.getElementById("startId").value);
   const endId = parseInt(document.getElementById("endId").value);
   const familyName = document.getElementById("family").value;
 
-  const tagModule = await import("https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js");
-  await tagModule.default();
-  const tagFamily = new tagModule.TagFamily(familyName);
-
+  const tagFamily = new window._tagModule.TagFamily(familyName);
   const zip = new JSZip();
 
   for (let tagId = startId; tagId <= endId; tagId++) {
@@ -78,12 +79,14 @@ window.generateSVGs = async function () {
     zip.file(`apriltag_${familyName}_${tagId}.svg`, svg);
   }
 
-  const blob = await zip.generateAsync({ type: "blob" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `apriltags_${familyName}_${startId}-${endId}.zip`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  zip.generateAsync({ type: "blob" }).then(function (blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `apriltags_${familyName}_${startId}-${endId}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
 };
