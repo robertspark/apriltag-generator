@@ -1,6 +1,6 @@
 import init, { TagFamily } from "https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js";
-import { jsPDF } from "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm";
-import JSZip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
+const { jsPDF } = window.jspdf;
+const JSZip = window.JSZip;
 
 await init();
 
