@@ -4,58 +4,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AprilTag Generator</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    canvas { border: 1px solid #ccc; margin-top: 10px; }
+  </style>
 </head>
 <body>
   <h1>AprilTag Generator</h1>
+
   <label>Tag Family:
     <select id="family">
       <option value="tag36h11">tag36h11</option>
       <option value="tag25h9">tag25h9</option>
     </select>
-  </label><br>
-  <label>Tag ID: <input type="number" id="tagId" value="0"/></label><br>
-  <label>Size (mm): <input type="number" id="tagSize" value="100"/></label><br>
-  <label>Margin (mm): <input type="number" id="tagMargin" value="10"/></label><br>
-  <button onclick="generateTag()">Generate</button>
+  </label><br><br>
+
+  <label>Tag ID: <input type="number" id="tagId" value="0"/></label><br><br>
+  <label>Tag Size (px): <input type="number" id="tagSize" value="300"/></label><br><br>
+  <label>Border Size (cells): <input type="number" id="borderSize" value="1"/></label><br><br>
+
+  <button onclick="generate()">Generate</button>
+
   <div id="output"></div>
 
-  <script src="https://unpkg.com/apriltag-js@latest/dist/apriltag.min.js"></script>
-  <script>
-    async function generateTag() {
-      const family = document.getElementById('family').value;
-      const id = parseInt(document.getElementById('tagId').value);
-      const size = parseInt(document.getElementById('tagSize').value);
-      const margin = parseInt(document.getElementById('tagMargin').value);
+  <script type="module">
+    import init, { TagFamily, TagDetector } from "https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js";
 
-      const canvas = document.createElement('canvas');
-      const scale = 10; // pixels per mm
-      const tag = await apriltag(family, id);
-      const totalSize = (size + 2 * margin) * scale;
+    async function generate() {
+      const familyName = document.getElementById("family").value;
+      const tagId = parseInt(document.getElementById("tagId").value);
+      const tagSize = parseInt(document.getElementById("tagSize").value);
+      const borderSize = parseInt(document.getElementById("borderSize").value);
 
-      canvas.width = canvas.height = totalSize;
-      const ctx = canvas.getContext('2d');
+      await init(); // Initialize WASM
 
-      // Fill white background
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const tagFamily = new TagFamily(familyName);
+      const tagBits = tagFamily.getTagBits(tagId); // 2D array
 
-      // Draw AprilTag image
-      const tagSize = size * scale;
-      const offset = margin * scale;
-      ctx.putImageData(tag.image, offset, offset);
+      const totalCells = tagBits.length + 2 * borderSize;
+      const cellSize = Math.floor(tagSize / totalCells);
+      const canvasSize = totalCells * cellSize;
 
-      // Display and download
-      const output = document.getElementById('output');
-      output.innerHTML = '';
-      output.appendChild(canvas);
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = canvasSize;
+      const ctx = canvas.getContext("2d");
 
-      const download = document.createElement('a');
-      download.innerText = "Download as PNG";
-      download.href = canvas.toDataURL();
-      download.download = `apriltag-${family}-${id}.png`;
-      output.appendChild(document.createElement('br'));
-      output.appendChild(download);
-    }
-  </script>
-</body>
-</html>
+      // Draw white background
+      ctx.fillStyle = "#FFF";
+      ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+      // Draw tag cells
+      for (let y = 0; y < tagBits.length; y++) {
+        for (le
