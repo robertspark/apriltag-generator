@@ -32,9 +32,7 @@
 </head>
 <body>
   <h1>AprilTag Generator</h1>
-
   <label><input type="checkbox" id="darkModeToggle"> Enable Dark Mode</label>
-
   <label>
     Tag Family:
     <select id="family">
@@ -48,10 +46,8 @@
       <option value="custom48h12">custom48h12</option>
     </select>
   </label>
-
   <label>Start ID: <input type="number" id="startId" value="0"></label>
   <label>End ID: <input type="number" id="endId" value="2"></label>
-
   <label>
     Paper Size:
     <select id="paperSize">
@@ -60,20 +56,20 @@
       <option value="letter">Letter</option>
     </select>
   </label>
-
   <button id="pdfBtn">Generate PDF</button>
   <button id="svgBtn">Download SVGs (ZIP)</button>
 
   <!-- UMD builds of jsPDF & JSZip -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <!-- Your module script -->
+  <!-- Module-script for the generator logic -->
   <script type="module" src="main.js"></script>
 
   <script>
-    document.getElementById("darkModeToggle").addEventListener("change", function() {
-      document.body.classList.toggle("dark-mode", this.checked);
-    });
+    document.getElementById("darkModeToggle")
+      .addEventListener("change", e => {
+        document.body.classList.toggle("dark-mode", e.target.checked);
+      });
   </script>
 </body>
 </html>
