@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AprilTag Generator</title>
+</head>
+<body>
+  <h1>AprilTag Generator</h1>
+  <label>Tag Family:
+    <select id="family">
+      <option value="tag36h11">tag36h11</option>
+      <option value="tag25h9">tag25h9</option>
+    </select>
+  </label><br>
+  <label>Tag ID: <input type="number" id="tagId" value="0"/></label><br>
+  <label>Size (mm): <input type="number" id="tagSize" value="100"/></label><br>
+  <label>Margin (mm): <input type="number" id="tagMargin" value="10"/></label><br>
+  <button onclick="generateTag()">Generate</button>
+  <div id="output"></div>
+
+  <script src="https://unpkg.com/apriltag-js@latest/dist/apriltag.min.js"></script>
+  <script>
+    async function generateTag() {
+      const family = document.getElementById('family').value;
+      const id = parseInt(document.getElementById('tagId').value);
+      const size = parseInt(document.getElementById('tagSize').value);
+      const margin = parseInt(document.getElementById('tagMargin').value);
+
+      const canvas = document.createElement('canvas');
+      const scale = 10; // pixels per mm
+      const tag = await apriltag(family, id);
+      const totalSize = (size + 2 * margin) * scale;
+
+      canvas.width = canvas.height = totalSize;
+      const ctx = canvas.getContext('2d');
+
+      // Fill white background
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw AprilTag image
+      const tagSize = size * scale;
+      const offset = margin * scale;
+      ctx.putImageData(tag.image, offset, offset);
+
+      // Display and download
+      const output = document.getElementById('output');
+      output.innerHTML = '';
+      output.appendChild(canvas);
+
+      const download = document.createElement('a');
+      download.innerText = "Download as PNG";
+      download.href = canvas.toDataURL();
+      download.download = `apriltag-${family}-${id}.png`;
+      output.appendChild(document.createElement('br'));
+      output.appendChild(download);
+    }
+  </script>
+</body>
+</html>
