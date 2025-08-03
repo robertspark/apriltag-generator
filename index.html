@@ -28,7 +28,7 @@
   <div id="output"></div>
 
   <script type="module">
-    import init, { TagFamily, TagDetector } from "https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js";
+    import init, { TagFamily } from "https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js";
 
     async function generate() {
       const familyName = document.getElementById("family").value;
@@ -55,4 +55,28 @@
 
       // Draw tag cells
       for (let y = 0; y < tagBits.length; y++) {
-        for (le
+        for (let x = 0; x < tagBits.length; x++) {
+          const value = tagBits[y][x];
+          ctx.fillStyle = value ? "#000" : "#FFF";
+          const px = (x + borderSize) * cellSize;
+          const py = (y + borderSize) * cellSize;
+          ctx.fillRect(px, py, cellSize, cellSize);
+        }
+      }
+
+      // Show canvas and download link
+      const output = document.getElementById("output");
+      output.innerHTML = "";
+      output.appendChild(canvas);
+
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = `apriltag-${familyName}-${tagId}.png`;
+      a.innerText = "Download PNG";
+      a.style.display = "block";
+      a.style.marginTop = "10px";
+      output.appendChild(a);
+    }
+  </script>
+</body>
+</html>
