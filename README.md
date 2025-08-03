@@ -55,7 +55,7 @@ They look like this:
 
 ## 📥 Usage
 
-Just open [index.html](index.html) in your browser or visit the deployed version on GitHub Pages:
+Just open [index.html](/docs/index.html) in your browser or visit the deployed version on GitHub Pages:
 
 👉 [https://robertspark.github.io/apriltag-generator/](https://robertspark.github.io/apriltag-generator/)
 
