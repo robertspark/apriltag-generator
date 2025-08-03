@@ -1,17 +1,15 @@
-(async () => {
-  const tagModule = await import("https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js");
-  await tagModule.default();
-  window._tagModule = tagModule;
-})();
+import init, { TagFamily } from "https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js";
+import { jsPDF } from "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm";
+import JSZip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
 
-window.generatePDF = function () {
-  const { jsPDF } = window.jspdf;
+await init();
+
+document.getElementById("pdfBtn").addEventListener("click", () => {
   const startId = parseInt(document.getElementById("startId").value);
   const endId = parseInt(document.getElementById("endId").value);
   const familyName = document.getElementById("family").value;
   const paperSize = document.getElementById("paperSize").value;
-
-  const tagFamily = new window._tagModule.TagFamily(familyName);
+  const tagFamily = new TagFamily(familyName);
   const pdf = new jsPDF({ format: paperSize });
 
   for (let tagId = startId; tagId <= endId; tagId++) {
@@ -53,14 +51,13 @@ window.generatePDF = function () {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-};
+});
 
-window.generateSVGs = function () {
+document.getElementById("svgBtn").addEventListener("click", () => {
   const startId = parseInt(document.getElementById("startId").value);
   const endId = parseInt(document.getElementById("endId").value);
   const familyName = document.getElementById("family").value;
-
-  const tagFamily = new window._tagModule.TagFamily(familyName);
+  const tagFamily = new TagFamily(familyName);
   const zip = new JSZip();
 
   for (let tagId = startId; tagId <= endId; tagId++) {
@@ -89,4 +86,4 @@ window.generateSVGs = function () {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   });
-};
+});
