@@ -1,34 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Batch AprilTag Generator</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input, select { margin-bottom: 10px; }
-    canvas { display: none; }
-  </style>
-</head>
-<body>
-  <h1>Batch AprilTag Generator</h1>
-  <label>Tag Family:
-    <select id="family">
-      <option value="tag36h11">tag36h11</option>
-      <option value="tag25h9">tag25h9</option>
-    </select>
-  </label><br>
-  <label>Start ID: <input type="number" id="startId" value="0" /></label><br>
-  <label>End ID: <input type="number" id="endId" value="4" /></label><br>
-  <label>Paper Size:
-    <select id="paperSize">
-      <option value="a4">A4</option>
-      <option value="a3">A3</option>
-      <option value="letter">Letter</option>
-    </select>
-  </label><br>
-  <button onclick="generatePDF()">Generate PDF</button>
-  <p><a id="downloadLink" style="display:none" download="apriltags.pdf">Download PDF</a></p>
+window.generatePDF = async function () {
+  const { jsPDF } = window.jspdf;
+  const startId = parseInt(document.getElementById("startId").value);
+  const endId = parseInt(document.getElementById("endId").value);
+  const familyName = document.getElementById("family").value;
+  const paperSize = document.getElementById("paperSize").value;
 
-  <script type="module" src="main.js"></script>
-</body>
-</html>
+  const tagModule = await import("https://cdn.jsdelivr.net/npm/apriltag-js@0.0.4/dist/apriltag.min.js");
+  await tagModule.default();
+  const tagFamily = new tagModule.TagFamily(familyName);
+
+  const pdf = new jsPDF({ format: paperSize });
+
+  for (let tagId = startId; tagId <= endId; tagId++) {
+    const tagBits = tagFamily.getTagBits(tagId);
+    const cellCount = tagBits.length;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 5;
+    const gridSize = Math.min(pageWidth, pageHeight) - 2 * margin;
+    const cellSize = gridSize / cellCount;
+    const offsetX = (pageWidth - cellCount * cellSize) / 2;
+    const offsetY = (pageHeight - cellCount * cellSize) / 2;
+
+    for (let row = 0; row < cellCount; row++) {
+      for (let col = 0; col < cellCount; col++) {
+        const x = offsetX + col * cellSize;
+        const y = offsetY + row * cellSize;
+        pdf.setFillColor(tagBits[row][col] ? 0 : 255);
+        pdf.rect(x, y, cellSize, cellSize, "F");
+      }
+    }
+
+    pdf.setFontSize(18);
+    pdf.text(`AprilTag Family: ${familyName}`, pageWidth / 2, margin, { align: "center" });
+
+    pdf.setFontSize(12);
+    pdf.text(`Tag ID: ${tagId}`, margin, pageHeight - margin);
+    pdf.text(`Paper Size: ${paperSize.toUpperCase()}`, pageWidth - margin, pageHeight - margin, { align: "right" });
+
+    if (tagId < endId) pdf.addPage();
+  }
+
+  const blob = pdf.output("blob");
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `apriltags_${familyName}_${startId}-${endId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
