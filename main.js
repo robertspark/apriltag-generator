@@ -47,9 +47,14 @@ window.generatePDF = async function () {
     if (tagId < endId) pdf.addPage();
   }
 
-  const blob = pdf.output("blob");
-  const url = URL.createObjectURL(blob);
-  const link = document.getElementById("downloadLink");
-  link.href = url;
-  link.style.display = "inline";
+const blob = pdf.output("blob");
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement("a");
+a.href = url;
+a.download = `apriltags_${familyName}_${startId}-${endId}.pdf`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
 };
