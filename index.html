@@ -2,33 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Batch AprilTag Generator</title>
+  <title>AprilTag Generator with PDF & SVG Export</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input, select { margin-bottom: 10px; }
-    canvas { display: none; }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+    input, select, button {
+      margin-bottom: 10px;
+      display: block;
+      background-color: var(--input-bg);
+      color: var(--text);
+      border: 1px solid #888;
+      padding: 5px;
+    }
+    :root {
+      --bg: #fff;
+      --text: #000;
+      --input-bg: #fff;
+    }
+    .dark-mode {
+      --bg: #121212;
+      --text: #f0f0f0;
+      --input-bg: #1e1e1e;
+    }
   </style>
 </head>
 <body>
-  <h1>Batch AprilTag Generator</h1>
+  <h1>AprilTag Generator</h1>
+
+  <label><input type="checkbox" id="darkModeToggle" /> Enable Dark Mode</label>
+
   <label>Tag Family:
     <select id="family">
-      <option value="tag36h11">tag36h11</option>
+      <option value="tag16h5">tag16h5</option>
+      <option value="tag25h7">tag25h7</option>
       <option value="tag25h9">tag25h9</option>
+      <option value="tag36h10">tag36h10</option>
+      <option value="tag36h11" selected>tag36h11</option>
+      <option value="standard41h12">standard41h12</option>
+      <option value="standard52h13">standard52h13</option>
+      <option value="custom48h12">custom48h12</option>
     </select>
-  </label><br>
-  <label>Start ID: <input type="number" id="startId" value="0" /></label><br>
-  <label>End ID: <input type="number" id="endId" value="4" /></label><br>
+  </label>
+  <label>Start ID: <input type="number" id="startId" value="0" /></label>
+  <label>End ID: <input type="number" id="endId" value="2" /></label>
   <label>Paper Size:
     <select id="paperSize">
       <option value="a4">A4</option>
       <option value="a3">A3</option>
       <option value="letter">Letter</option>
     </select>
-  </label><br>
+  </label>
   <button onclick="generatePDF()">Generate PDF</button>
-  <p><a id="downloadLink" style="display:none" download="apriltags.pdf">Download PDF</a></p>
+  <button onclick="generateSVGs()">Download SVGs (ZIP)</button>
 
-  <script type="module" src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="main.js"></script>
+
+  <script>
+    document.getElementById("darkModeToggle").addEventListener("change", function () {
+      document.body.classList.toggle("dark-mode", this.checked);
+    });
+  </script>
 </body>
 </html>
